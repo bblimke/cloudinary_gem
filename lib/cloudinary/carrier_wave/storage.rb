@@ -35,6 +35,7 @@ class Cloudinary::CarrierWave::Storage < ::CarrierWave::Storage::Abstract
 
       store_cloudinary_version(uploader.metadata["version"]) if uploader.metadata["version"]
       store_pages(uploader.metadata["pages"])
+      store_metadata(uploader.metadata)
 
       # Will throw an exception on error
     else
@@ -70,6 +71,17 @@ class Cloudinary::CarrierWave::Storage < ::CarrierWave::Storage::Abstract
     if defined?(ActiveRecord::Base) && uploader.model.is_a?(ActiveRecord::Base) && number_of_pages_attribute
       model_class.update_all({number_of_pages_attribute=>pages}, {:id => uploader.model.id})
       uploader.model.send :write_attribute, number_of_pages_attribute, pages
+    end
+  end
+
+  def store_metadata(metadata)
+    model_class = uploader.model.class
+    column = uploader.model.send(:_mounter, uploader.mounted_as).send(:serialization_column)
+    column = "#{column}_metadata"
+    return unless uploader.model.respond_to?(column)
+    if defined?(ActiveRecord::Base) && uploader.model.is_a?(ActiveRecord::Base)
+      model_class.update_all({column=>JSON.generate(metadata)}, {:id => uploader.model.id})
+      uploader.model.send :write_attribute, column, JSON.generate(metadata)
     end
   end
 end
