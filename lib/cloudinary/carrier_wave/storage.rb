@@ -39,7 +39,7 @@ class Cloudinary::CarrierWave::Storage < ::CarrierWave::Storage::Abstract
 
       # Will throw an exception on error
     else
-      raise "nested versions are not allowed." if (uploader.class.version_names.length > 1)
+      raise CloudinaryException, "nested versions are not allowed." if (uploader.class.version_names.length > 1)
       # Do nothing - versions are not handled locally.
     end
     nil
@@ -60,7 +60,7 @@ class Cloudinary::CarrierWave::Storage < ::CarrierWave::Storage::Abstract
       model_class.where(:_id=>uploader.model._id).update_all(column=>name)
       uploader.model.send :write_attribute, column, name
     else
-      raise "Only ActiveRecord and Mongoid are supported at the moment!"
+      raise CloudinaryException, "Only ActiveRecord and Mongoid are supported at the moment!"
     end
   end
 
